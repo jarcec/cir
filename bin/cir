@@ -1,0 +1,5 @@
+#!/usr/bin/env ruby
+
+# Run command line interface
+require 'cir'
+Cir::Cli.run
