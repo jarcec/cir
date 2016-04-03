@@ -34,14 +34,9 @@ module Cir
     end
 
     ##
-    # Import given file to the working directory and subsequently add the file to index. We're expecting a 
-    # full (absolute) path to the file here (which is a difference when comparing to {#add_file} method).
-    def import_file(file)
-      target_dir = File.expand_path(@repo.path + "/../" + File.dirname(file))
-
-      FileUtils.mkdir_p target_dir
-      FileUtils.cp(file, target_dir)
-      add_file(file[1..-1])
+    # Path to the root of the repository
+    def repository_root
+      File.expand_path(@repo.path + "/../")
     end
 
     ##

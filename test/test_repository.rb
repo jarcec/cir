@@ -88,17 +88,30 @@ class RepositoryTest < Test::Unit::TestCase
     end
   end
 
-
   def test_status
     with_repo do |repoDir|
-      yaml = YAML::Store.new(repoDir + '/cir.file_list.yml')
-      yaml.transaction { yaml[:files]["blah"] = {} }
+      Dir.mktmpdir("cir_test_input_") do |inputDir|
+        inputFile = "#{inputDir}/out.txt"
+        File.open(inputFile, 'w') {|f| f.write("Input data") }
+        inputFile2 = "#{inputDir}/out2.txt"
+        File.open(inputFile2, 'w') {|f| f.write("Input data") }
 
-      repo = Cir::Repository.new(repoDir)
-      result = repo.status("blah")
+        repo = Cir::Repository.new(repoDir)
+        repo.register inputFile
+        repo.register inputFile2
 
-      assert result != nil
-      assert_equal({}, result)
+        status = repo.status
+        assert_not_nil status
+        assert_equal status.size, 2
+
+        status = repo.status "X"
+        assert_not_nil status
+        assert_equal status.size, 0
+
+        status = repo.status inputFile
+        assert_not_nil status
+        assert_equal status.size, 1
+      end
     end
   end
 

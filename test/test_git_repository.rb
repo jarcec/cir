@@ -42,25 +42,6 @@ class GitRepositoryTest < Test::Unit::TestCase
     end
   end
 
-  def test_import_file_and_commit
-    with_repo do |baseDir, repo|
-      filePath = baseDir + "/cool.file"
-      createFile filePath, "This is the coolest file ever"
-
-      repo.import_file filePath
-      repo.commit
-
-      ruggedRepo = Rugged::Repository.new(baseDir + "/repo")
-      master = ruggedRepo.branches.first
-      assert_equal "master", master.name
-      assert_not_nil master.target
-
-      tree = master.target.tree
-      assert_not_nil tree
-      assert_equal 1, tree.count
-    end
-  end
-
   # Helper method to automatically facilitate a new git repository for each test method
   def with_repo
     Dir.mktmpdir("cir_test_repo_") do |baseDir|
