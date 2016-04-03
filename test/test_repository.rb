@@ -100,15 +100,16 @@ class RepositoryTest < Test::Unit::TestCase
         repo.register inputFile
         repo.register inputFile2
 
+        # Everything
         status = repo.status
         assert_not_nil status
         assert_equal status.size, 2
 
-        status = repo.status "X"
-        assert_not_nil status
-        assert_equal status.size, 0
+        # Not registered file
+        assert_raise(Cir::Exception::NotRegistered) { repo.status ["X"] }
 
-        status = repo.status inputFile
+        # One specific file
+        status = repo.status [inputFile]
         assert_not_nil status
         assert_equal status.size, 1
       end

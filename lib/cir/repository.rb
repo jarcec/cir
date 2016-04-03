@@ -65,19 +65,33 @@ module Cir
       files = []
 
       @database.transaction do 
-        @database[:files].each do |key, value|
-          # Skip if we're searching for particular file(s)
-          next if requested_files != nil and not requested_files.include? key
+        # Without requested_files list, we'll return everything
+        if requested_files.nil?
+          @database[:files].each do |key, value|
+            files << createStoredFile(key, value)
+          end
+        else
+          # Otherwise we'll look only for specific files
+          requested_files.each do |request|
+            raise Cir::Exception::NotRegistered, request unless @database[:files].include? request
 
-          # Otherwise create and populate StoredFile structure
-          files << Cir::StoredFile.new(
-            file_path: key,
-            repository_location: File.expand_path(@git.repository_root + "/" + key)
-          )
+            files << createStoredFile(request, @database[:files][request])
+          end
         end
       end
 
       files
+    end
+
+    private
+
+    ##
+    # Create StoredFile structure for given file and it's metadata
+    def createStoredFile(key, value)
+      Cir::StoredFile.new(
+        file_path: key,
+        repository_location: File.expand_path(@git.repository_root + "/" + key)
+      )
     end
 
   end # end class Repository
