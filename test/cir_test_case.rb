@@ -1,0 +1,61 @@
+require 'cir'
+require 'tmpdir'
+require 'test/unit'
+require 'fileutils'
+
+##
+# Parent test case that will contain shared functionality that we need
+# across various test cases.
+class CirTestCase < Test::Unit::TestCase
+
+  ##
+  # Prepare each test, currently:
+  # * Forward stderr and stdout to /dev/null
+  # * Prepare working directory (in tmp space)
+  def setup
+    # Create working directory
+    @workDir = Dir.mktmpdir(["cir_test_", "_#{self.class.name}"])
+    @repoDir = "#{@workDir}/repo"
+
+    # Forward stderr/stdout to /dev/null to not mess with test output
+    @original_stderr = $stderr
+    @original_stdout = $stdout    
+    $stderr = File.open(File::NULL, "w")
+    $stdout = File.open(File::NULL, "w")
+  end
+
+  ##
+  # Undo all the changes we did in #setup
+  def teardown
+    # Remove forwarding of stderr/stdout to /dev/null
+    $stderr = @original_stderr
+    $stdout = @original_stdout
+
+    # Cleaning up working directory
+    FileUtils.rm_rf(@workDir, secure: true)
+  end
+
+  ## 
+  # Create new file with given file name inside the work directory
+  # and return absolute path to the created file.
+  def create_file(fileName, content)
+    full_path = "#{@workDir}/#{fileName}"
+    File.open(full_path, 'w') { |f| f.write(content) }
+    full_path
+  end
+
+  ## 
+  # Initialize Cir::Repository inside @repoDir and persist that inside
+  # @repo variable (e.g. we have max 1 repo per test instance).
+  def init_repo
+    Cir::Repository.create(@repoDir)
+    @repo = Cir::Repository.new(@repoDir)
+  end
+
+  ##
+  # Initialize only git repository (no metadata) and persist that inside
+  # @repo variable.
+  def init_git_repo
+    @repo = Cir::GitRepository.create(@repoDir)
+  end
+end
