@@ -113,6 +113,50 @@ module Cir
       @git.commit
     end
 
+    ##
+    # Restore persistent variant of the files
+    def restore(files = nil, force = false)
+      @database.transaction do
+        if files.nil?
+          # No file list, go over all files and detect if they changed
+          @database[:files].each do |key, value|
+            stored = createStoredFile(key, @database[:files][key])
+
+            # If the file on local file system doesn't exists, task is simple - just copy it to working directory
+            if not File.exists?(stored.file_path)
+              FileUtils.cp(stored.repository_location, stored.file_path)
+            else
+              if Cir::DiffManager.create(stored).changed?
+                if force
+                  FileUtils.remove_entry stored.file_path
+                  FileUtils.cp(stored.repository_location, stored.file_path)
+                else
+                  puts "Skipped mass change to #{key}."
+                end
+              end
+            end
+          end
+        else
+          # User supplied set of files
+          files.each do |file|
+            raise Cir::Exception::NotRegistered, file unless @database[:files].include? file
+
+            stored = createStoredFile(file, @database[:files][file])
+            diff = Cir::DiffManager.create(stored)
+
+            if not File.exists? stored.file_path
+              FileUtils.cp(stored.repository_location, stored.file_path)
+            else
+              if diff.changed?
+                FileUtils.remove_entry stored.file_path
+                FileUtils.cp(stored.repository_location, stored.file_path)
+              end
+            end
+          end
+        end
+      end
+    end
+
     private
 
     ##

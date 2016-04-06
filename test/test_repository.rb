@@ -99,6 +99,34 @@ class RepositoryTest < CirTestCase
     assert_file_in_repo test_file
   end
 
+  def test_restore
+    init_repo
 
+    test_file = create_file("A", "data")
+    @repo.register(test_file)
+
+    # Restore non existing file
+    assert_raise(Cir::Exception::NotRegistered) { @repo.restore ["X"] }
+
+    # Restoring non-existing file via "all"
+    FileUtils.rm test_file
+    @repo.restore
+    assert_file_in_repo test_file
+
+    # Restore non-existing file specifically by file name
+    FileUtils.rm test_file
+    @repo.restore([test_file])
+    assert_file_in_repo test_file
+
+    # Restoring via "all"
+    create_file("A", "New data")
+    @repo.restore(nil, true)
+    assert_file_in_repo test_file
+
+    # Restore given file
+    create_file("A", "Newer data")
+    @repo.restore([test_file])
+    assert_file_in_repo test_file
+  end
 
 end
