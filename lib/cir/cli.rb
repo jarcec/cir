@@ -1,6 +1,3 @@
-# Future ideas
-# --offline
-# --verbose
 require 'trollop'
 require 'cir/repository'
 
