@@ -1,28 +1,20 @@
-require 'tmpdir'
-require 'test/unit'
-require 'cir'
+require 'cir_test_case'
 
-class DiffManagerTest < Test::Unit::TestCase
+class DiffManagerTest < CirTestCase
 
   def test_create
-    Dir.mktmpdir("cir_diff_manager") do |dir|
-      # The same files
-      createFile("#{dir}/fileA", "A")
-      createFile("#{dir}/fileB", "A")
-      diff = Cir::DiffManager.create(Cir::StoredFile.new(file_path: "#{dir}/fileA", repository_location: "#{dir}/fileB"))
-      assert_false diff.changed?
+    # Test files
+    file_a = create_file("a.file", "A")
+    file_b = create_file("b.file", "A")
+    file_c = create_file("c.file", "B")
 
-      # Different files
-      createFile("#{dir}/fileC", "B")
-      diff = Cir::DiffManager.create(Cir::StoredFile.new(file_path: "#{dir}/fileA", repository_location: "#{dir}/fileC"))
-      assert diff.changed?
-    end
-  end
+    # Same content
+    diff = Cir::DiffManager.create(Cir::StoredFile.new(file_path: file_a, repository_location: file_b))
+    assert_false diff.changed?
 
-
-  # Create new file with given content
-  def createFile(file, content)
-    File.open(file, 'w') { |f| f.write(content) }
+    # Different content
+    diff = Cir::DiffManager.create(Cir::StoredFile.new(file_path: file_a, repository_location: file_c))
+    assert diff.changed?
   end
 
 end

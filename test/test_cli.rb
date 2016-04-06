@@ -1,9 +1,7 @@
-require 'test/unit'
-require 'rspec/mocks'
-require 'cir'
-require 'tempfile'
+require 'cir_test_case'
 
-class TestCli < Test::Unit::TestCase
+# This test case is not fully covering functionality in Cir::Cli
+class TestCli < CirTestCase
 
   class TestRepository
     def register(file)
@@ -17,6 +15,7 @@ class TestCli < Test::Unit::TestCase
   end
 
   def setup
+    super
     @cli = Cir::Cli.new
     @repository = TestRepository.new
     @cli.set_repository @repository
@@ -27,13 +26,10 @@ class TestCli < Test::Unit::TestCase
   end
 
   def test_run_register
-    Dir.mktmpdir("cir_test_cli_") do |dir|
-      inputFile = "#{dir}/out.txt"
-      File.open(inputFile, 'w') {|f| f.write("Input data") }
+    test_file = create_file("a.txt", "content")
 
-      @cli.run(["register", inputFile, inputFile])
-      assert_equal @repository.db, [inputFile, inputFile]
-    end
+    @cli.run(["register", test_file, test_file])
+    assert_equal @repository.db, [test_file, test_file]
   end
 
 end

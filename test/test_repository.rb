@@ -1,129 +1,82 @@
 require 'tmpdir'
-require 'test/unit'
-require 'cir'
+require 'cir_test_case'
 
-class RepositoryTest < Test::Unit::TestCase
+class RepositoryTest < CirTestCase 
 
   def test_create_already_exists
-    Dir.mktmpdir("cir_test_repo_") do |repoDir|
-      assert_raise Cir::Exception::RepositoryExists do
-        Cir::Repository.create(repoDir)
-      end
+    assert_raise Cir::Exception::RepositoryExists do
+      Cir::Repository.create(@workDir)
     end
   end
 
   def test_create
-    Dir.mktmpdir("cir_test_repo_") do |baseDir|
-      repoDir = "#{baseDir}/repo"
-      Cir::Repository.create(repoDir)
+    init_repo
 
-      fileList = "#{repoDir}/cir.file_list.yml"
+    fileList = "#{@repoDir}/cir.file_list.yml"
 
-      assert File.exists? fileList
-      yaml = YAML::Store.new(fileList)
+    assert File.exists? fileList
+    yaml = YAML::Store.new(fileList)
 
-      assert_equal(1, yaml.transaction { yaml[:version] })
-      assert_equal({}, yaml.transaction { yaml[:files] })
-    end
+    assert_equal(1, yaml.transaction { yaml[:version] })
+    assert_equal({}, yaml.transaction { yaml[:files] })
   end
 
 
   def test_register
-    with_repo do |repoDir|
-      Dir.mktmpdir("cir_test_input_") do |inputDir|
-        # Prepare test file
-        inputFile = "#{inputDir}/out.txt"
-        File.open(inputFile, 'w') {|f| f.write("Input data") }
+    init_repo
 
-        # Register in repository
-        repo = Cir::Repository.new(repoDir)
-        repo.register(inputFile)
+    # Prepare test file
+    test_file = create_file("A", "Input data")
 
-        # Which should create entity in the repository
-        yaml = YAML::Store.new(repoDir + '/cir.file_list.yml')
-        result = yaml.transaction { yaml[:files][inputFile] }
-        assert_not_nil result
-        assert_equal({}, result)
+    # Register in repository
+    @repo.register(test_file)
 
-        # And the file should also exists in the working directory
-        assert File.exists?("#{repoDir}/#{inputFile}")
-      end
+    # Which should create entity in the repository
+    yaml = YAML::Store.new(@repoDir + '/cir.file_list.yml')
+    result = yaml.transaction { yaml[:files][test_file] }
+    assert_not_nil result
+    assert_equal({}, result)
+
+    # And the file should also exists in the working directory
+    assert File.exists?("#{@repoDir}/#{test_file}")
+
+    # Registering again should fail
+    assert_raise Cir::Exception::AlreadyRegistered do
+      @repo.register(test_file)
     end
   end
-
-  def test_register_already_exists
-    with_repo do |repoDir|
-      Dir.mktmpdir("cir_test_input_") do |inputDir|
-        # Prepare test file
-        inputFile = "#{inputDir}/out.txt"
-        File.open(inputFile, 'w') {|f| f.write("Input data") }
-
-        # Register in repository
-        repo = Cir::Repository.new(repoDir)
-        repo.register(inputFile)
-
-        # And register again
-        assert_raise Cir::Exception::AlreadyRegistered do
-          repo.register(inputFile)
-        end
-      end
-    end
-  end
-
 
   def test_registered
-    with_repo do |repoDir|
-      Dir.mktmpdir("cir_test_input_") do |inputDir|
-        # Prepare test file
-        inputFile = "#{inputDir}/out.txt"
-        File.open(inputFile, 'w') {|f| f.write("Input data") }
+    init_repo
 
-        # Register in repository
-        repo = Cir::Repository.new(repoDir)
-        repo.register(inputFile)
+    test_file = create_file("A", "Input data")
 
-        assert repo.registered?(inputFile)
-        assert !repo.registered?("/blah")
-      end
-    end
+    @repo.register(test_file)
+
+    assert @repo.registered?(test_file)
+    assert_false @repo.registered?("/blah")
   end
 
   def test_status
-    with_repo do |repoDir|
-      Dir.mktmpdir("cir_test_input_") do |inputDir|
-        inputFile = "#{inputDir}/out.txt"
-        File.open(inputFile, 'w') {|f| f.write("Input data") }
-        inputFile2 = "#{inputDir}/out2.txt"
-        File.open(inputFile2, 'w') {|f| f.write("Input data") }
+    init_repo
 
-        repo = Cir::Repository.new(repoDir)
-        repo.register inputFile
-        repo.register inputFile2
+    test_file_a = create_file("A", "data")
+    test_file_b = create_file("B", "data")
+    @repo.register(test_file_a)
+    @repo.register(test_file_b)
 
-        # Everything
-        status = repo.status
-        assert_not_nil status
-        assert_equal status.size, 2
+    # Everything
+    status = @repo.status
+    assert_not_nil status
+    assert_equal status.size, 2
 
-        # Not registered file
-        assert_raise(Cir::Exception::NotRegistered) { repo.status ["X"] }
+    # Not registered file
+    assert_raise(Cir::Exception::NotRegistered) { @repo.status ["X"] }
 
-        # One specific file
-        status = repo.status [inputFile]
-        assert_not_nil status
-        assert_equal status.size, 1
-      end
-    end
+    # One specific file
+    status = @repo.status [test_file_a]
+    assert_not_nil status
+    assert_equal status.size, 1
   end
-
-  # Helper method to automatically facilitate a new git repository for each test method
-  def with_repo
-    Dir.mktmpdir("cir_test_repo_") do |baseDir|
-      repoDir = "#{baseDir}/repo"
-      Cir::Repository.create(repoDir)
-      yield(repoDir)
-    end
-  end
-
 
 end

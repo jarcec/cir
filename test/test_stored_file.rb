@@ -1,7 +1,6 @@
-require 'test/unit'
-require 'cir'
+require 'cir_test_case'
 
-class StoredFileTest < Test::Unit::TestCase
+class StoredFileTest < CirTestCase
 
   def test_initialize
     file = Cir::StoredFile.new file_path: "/home/jarcec/", repository_location: "location" 
