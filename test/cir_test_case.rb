@@ -41,7 +41,7 @@ class CirTestCase < Test::Unit::TestCase
   def create_file(fileName, content)
     full_path = "#{@workDir}/#{fileName}"
     File.open(full_path, 'w') { |f| f.write(content) }
-    full_path
+    File.expand_path(full_path)
   end
 
   ## 

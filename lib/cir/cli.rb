@@ -2,24 +2,33 @@ require 'trollop'
 require 'cir/repository'
 
 module Cir
+  ##
+  # Main command line interface for cir
   class Cli 
 
+    # All subcommands that we're accepting
     SUB_COMMANDS = %w(init register status update deregister)
 
+    ##
+    # Initialization will create repository instance and hence validate that it exists
     def initialize
       # Repository with all our metadata
       cirHome = File.expand_path(ENV['CIR_HOME'] || "~/.cir/repository")
       @repository = Cir::Repository.new(cirHome)
     end
 
+    ##
+    # Override internal repository instance (only for test)
     def set_repository(repository)
       @repository = repository
     end
 
+    ##
+    # Process given arguments and execute them
     def run(argv)
       # Global argument parsing
       @global_opts = Trollop::options(argv) do
-        version "CIR - Configs in repository 0.0.X-SNAPSHOT"
+        version "CIR - Configs in repository"
         banner "Keep your configuration files safely versioned in external repository. Available subcommands #{SUB_COMMANDS}"
         stop_on SUB_COMMANDS
       end
@@ -28,37 +37,36 @@ module Cir
       @cmd = argv.shift
       @cmd_opts = case @cmd
         when "init"
+          sub_init
         when "register"
           Trollop::die "Missing file list" if argv.empty?
+          sub_register(argv)
+        when "deregister"
+          Trollop::die "Missing file list" if argv.empty?
+          sub_deregister(argv)
         when "status"
           Trollop::options(argv) do
             opt :show_diff, "Show diffs for changed files", :default => false
           end
+          sub_status(argv)
         when "update"
-          # Nothing specific for update
+          sub_update(argv)
+        when "restore"
+          sub_restore(argv)
         else
           Trollop::die "Unknown subcommand #{cmd.inspect}"
       end
-
-      # Special operation for new repository
-      if @cmd == "init"
-        Cir::Repository.create(cirHome)
-        return
-      end
-
-      # Execute given action(s)
-      case @cmd
-      when "register"
-        sub_register(argv)
-      when "status"
-        sub_status(argv)
-      when "update"
-        sub_update(argv)
-      when "restore"
-        sub_restore(argv)
-      end
     end
 
+    ##
+    # Init repository in new location
+    def sub_init
+      Cir::Repository.create(cirHome)
+      return
+    end
+
+    ##
+    # Register new file(s)
     def sub_register(argv)
       argv.each do |file|
         puts "Registering file: #{file}"
@@ -66,6 +74,8 @@ module Cir
       end
     end
 
+    ##
+    # Deregister existing file(s)
     def sub_deregister(argv)
       argv.each do |file|
         puts "Deregistering file: #{file}"
@@ -73,6 +83,8 @@ module Cir
       end
     end
 
+    ##
+    # Retrieve status of given file(s)
     def sub_status(argv)
       files = @repository.status(argv.empty? ? nil : argv)
       
@@ -85,14 +97,20 @@ module Cir
       end
     end
 
+    ##
+    # Update given file(s) - e.g. commit any user changes
     def sub_update(argv)
       @repository.update(argv.empty? ? nil : argv)
     end
 
+    ##
+    # Restore given file(s) - e.g. get rid of any user changes
     def sub_restore(argv)
       @repository.restore(argv.empty? ? nil : argv)
     end
 
+    ##
+    # Convenience method to run the CLI without standalone instance
     def self.run
       cli = Cli.new
       cli.run(ARGV)
