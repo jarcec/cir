@@ -34,6 +34,9 @@ module Cir
         when "register"
           Trollop::die "Missing file list" if argv.empty?
         when "status"
+          Trollop::options(argv) do
+            opt :show_diff, "Show diffs for changed files", :default => false
+          end
         else
           Trollop::die "Unknown subcommand #{cmd.inspect}"
       end
@@ -49,7 +52,7 @@ module Cir
       when "register"
         sub_register(argv)
       when "status"
-        sub_status
+        sub_status(argv)
       end
     end
 
@@ -60,8 +63,16 @@ module Cir
       end
     end
 
-    def sub_status
-      # TODO
+    def sub_status(argv)
+      files = @repository.status(argv.empty? ? nil : argv)
+      
+      files.each do |file|
+        diff = Cir::DiffManager.create(file)
+        if diff.changed?
+          puts "File #{file.file_path} changed."
+          puts diff.to_s if @cmd_opts[:show_diff]
+        end
+      end
     end
 
     def self.run

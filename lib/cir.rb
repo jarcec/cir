@@ -1,4 +1,5 @@
 require 'cir/exception/exceptions'
+require 'cir/diff_manager'
 require 'cir/stored_file'
 require 'cir/git_repository'
 require 'cir/repository'
