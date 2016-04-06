@@ -54,6 +54,8 @@ module Cir
         sub_status(argv)
       when "update"
         sub_update(argv)
+      when "restore"
+        sub_restore(argv)
       end
     end
 
@@ -78,6 +80,10 @@ module Cir
 
     def sub_update(argv)
       @repository.update(argv.empty? ? nil : argv)
+    end
+
+    def sub_restore(argv)
+      @repository.restore(argv.empty? ? nil : argv)
     end
 
     def self.run
