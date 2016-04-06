@@ -36,5 +36,20 @@ class GitRepositoryTest < CirTestCase
     assert_not_nil tree['b.file']
   end
 
+  def test_remove_file_and_commit
+    init_git_repo
+
+    ruggedRepo = Rugged::Repository.new(@repoDir)
+
+    file_a = create_file("repo/a.file", "Content")
+    @repo.add_file "a.file"
+    @repo.commit
+    assert_equal 1, ruggedRepo.branches.first.target.tree.count
+
+    @repo.remove_file("a.file")
+    @repo.commit
+    assert_equal 0, ruggedRepo.branches.first.target.tree.count
+  end
+
 end
 

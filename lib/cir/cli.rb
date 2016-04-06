@@ -4,7 +4,7 @@ require 'cir/repository'
 module Cir
   class Cli 
 
-    SUB_COMMANDS = %w(init register status update)
+    SUB_COMMANDS = %w(init register status update deregister)
 
     def initialize
       # Repository with all our metadata
@@ -63,6 +63,13 @@ module Cir
       argv.each do |file|
         puts "Registering file: #{file}"
         @repository.register(File.expand_path(file))
+      end
+    end
+
+    def sub_deregister(argv)
+      argv.each do |file|
+        puts "Deregistering file: #{file}"
+        @repository.deregister(File.expand_path(file))
       end
     end
 

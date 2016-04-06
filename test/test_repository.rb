@@ -57,6 +57,26 @@ class RepositoryTest < CirTestCase
     assert_false @repo.registered?("/blah")
   end
 
+  def test_deregister
+    init_repo
+
+    # Prepare test file
+    test_file = create_file("A", "Input data")
+
+    # Register in repository
+    @repo.register(test_file)
+    assert @repo.registered? test_file
+
+    # Deregister the file now
+    @repo.deregister(test_file)
+
+    assert_false @repo.registered? test_file
+    assert_false File.exists?("#{@repoDir}/#{test_file}")
+
+    # Deregister of not registered file should raise an exception
+    assert_raise(Cir::Exception::NotRegistered) { @repo.deregister "X"}
+  end
+
   def test_status
     init_repo
 

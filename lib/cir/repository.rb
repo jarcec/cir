@@ -54,6 +54,27 @@ module Cir
     end
 
     ##
+    # Deregister file
+    def deregister(file)
+      # Can't deregister file that hasn't been registered
+      raise Cir::Exception::NotRegistered, file if not registered?(file)
+
+      # Remove the file from git, our database and finally from git working directory
+      @database.transaction do
+        stored = createStoredFile(file, @database[:files][file])
+        FileUtils.rm(stored.repository_location)
+
+        @git.remove_file(file[1..-1]) # Removing leading "/" to make the absolute path relative to the repository's root
+
+        @database[:files].delete(file)
+      end
+
+      # And finally commit the transaction
+      @git.commit
+    end
+
+
+    ##
     # Returns true if given file is registered, otherwise false.
     def registered?(file)
       @database.transaction { return @database[:files][file] != nil }

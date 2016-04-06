@@ -34,6 +34,14 @@ module Cir
     end
 
     ##
+    # Remove given file from the repository. The path must have the same characteristics as it have
+    # for #add_file method.
+    def remove_file(file)
+      index = @repo.index
+      index.remove file
+    end
+
+    ##
     # Path to the root of the repository
     def repository_root
       File.expand_path(@repo.path + "/../")
