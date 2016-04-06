@@ -58,4 +58,12 @@ class CirTestCase < Test::Unit::TestCase
   def init_git_repo
     @repo = Cir::GitRepository.create(@repoDir)
   end
+
+  ##
+  # Asserts if given file have been correctly updated in the git working
+  # directory.
+  def assert_file_in_repo(file)
+    diff = Cir::DiffManager.create(Cir::StoredFile.new(file_path: file, repository_location: "#{@repDir}/#{file}"))
+    assert_false diff.changed?
+  end
 end

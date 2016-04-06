@@ -83,6 +83,36 @@ module Cir
       files
     end
 
+
+    ##
+    # Will update stored variant of existing files with their newer copy
+    def update(files = nil)
+      @database.transaction do
+        if files.nil?
+          # No file list, go over all files and detect if they changed
+          @database[:files].each do |key, value|
+            diff = Cir::DiffManager.create(createStoredFile(key, value))
+            if diff.changed?
+              importFileToRepository(key)
+            end
+          end
+        else
+          # When we have a file list we will verify only the particular files
+          files.each do |file|
+            raise Cir::Exception::NotRegistered, file unless @database[:files].include? file
+
+            diff = Cir::DiffManager.create(createStoredFile(file, @database[:files][file]))
+            if diff.changed?
+              importFileToRepository(key)
+            end
+          end
+        end
+      end
+
+      # Finally commit the transaction
+      @git.commit
+    end
+
     private
 
     ##
@@ -92,6 +122,24 @@ module Cir
         file_path: key,
         repository_location: File.expand_path(@git.repository_root + "/" + key)
       )
+    end
+
+    # TODO
+    def importFileToRepository(file)
+      target_file = File.expand_path(@git.repository_root + "/" + file)
+      target_dir = File.dirname(target_file)
+
+      if File.exists?(target_file)
+        FileUtils.rm_rf(target_file, secure: true)
+      else
+        FileUtils.mkdir_p(target_dir)
+      end
+
+      # And finally copy the file to repository
+      FileUtils.cp(file, target_file)
+
+      # And register it inside git and our metadata database
+      @git.add_file(file[1..-1]) # Removing leading "/" to make the absolute path relative to the repository's root
     end
 
   end # end class Repository

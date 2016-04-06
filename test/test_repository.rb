@@ -79,4 +79,26 @@ class RepositoryTest < CirTestCase
     assert_equal status.size, 1
   end
 
+  def test_update
+    init_repo
+
+    test_file = create_file("A", "data")
+    @repo.register(test_file)
+
+    # Update non existing file
+    assert_raise(Cir::Exception::NotRegistered) { @repo.update ["X"] }
+
+    # Updating via "all"
+    create_file("A", "New data")
+    @repo.update
+    assert_file_in_repo test_file
+
+    # Updating via "given file"
+    create_file("A", "Newer data")
+    @repo.update
+    assert_file_in_repo test_file
+  end
+
+
+
 end

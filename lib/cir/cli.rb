@@ -4,7 +4,7 @@ require 'cir/repository'
 module Cir
   class Cli 
 
-    SUB_COMMANDS = %w(init register status)
+    SUB_COMMANDS = %w(init register status update)
 
     def initialize
       # Repository with all our metadata
@@ -34,6 +34,8 @@ module Cir
           Trollop::options(argv) do
             opt :show_diff, "Show diffs for changed files", :default => false
           end
+        when "update"
+          # Nothing specific for update
         else
           Trollop::die "Unknown subcommand #{cmd.inspect}"
       end
@@ -50,6 +52,8 @@ module Cir
         sub_register(argv)
       when "status"
         sub_status(argv)
+      when "update"
+        sub_update(argv)
       end
     end
 
@@ -70,6 +74,10 @@ module Cir
           puts diff.to_s if @cmd_opts[:show_diff]
         end
       end
+    end
+
+    def sub_update(argv)
+      @repository.update(argv.empty? ? nil : argv)
     end
 
     def self.run
