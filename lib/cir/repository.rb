@@ -36,15 +36,19 @@ module Cir
 
     ##
     # Register new file. Given path must be absolute.
-    def register(file)
-      # Register is one time operation, one can't re-register existing file
-      raise Cir::Exception::AlreadyRegistered, file if registered?(file)
+    def register(files)
+      files.each do |file|
+        # Register is one time operation, one can't re-register existing file
+        raise Cir::Exception::AlreadyRegistered, file if registered?(file)
 
-      # Import file to repository
-      import_file file
+        # Import file to repository
+        import_file file
 
-      # Create new metadata for the tracked file
-      @database.transaction { @database[:files][file] = {} }
+        # Create new metadata for the tracked file
+        @database.transaction { @database[:files][file] = {} }
+
+        puts "Registering file: #{file}"
+      end
 
       # And finally commit the transaction
       @git.commit
@@ -52,14 +56,18 @@ module Cir
 
     ##
     # Deregister file
-    def deregister(file)
+    def deregister(files)
       @database.transaction do
-        stored = stored_file(file)
+        files.each do |file|
+          stored = stored_file(file)
 
-        # Remove the file from git, our database and finally from git working directory
-        FileUtils.rm(stored.repository_location)
-        @git.remove_file(file[1..-1]) # Removing leading "/" to make the absolute path relative to the repository's root
-        @database[:files].delete(file)
+          # Remove the file from git, our database and finally from git working directory
+          FileUtils.rm(stored.repository_location)
+          @git.remove_file(file[1..-1]) # Removing leading "/" to make the absolute path relative to the repository's root
+          @database[:files].delete(file)
+
+          puts "Deregistering file: #{file}"
+        end
       end
 
       # And finally commit the transaction
@@ -102,6 +110,7 @@ module Cir
       generate_file_list(requested_files).each do |file|
         if file.diff.changed?
           import_file(file.file_path)
+          puts "Updating #{file.file_path}"
         end
       end
 
@@ -116,6 +125,7 @@ module Cir
         # If the destination file doesn't exist, we will simply copy it over
         if not File.exists?(file.file_path)
           FileUtils.cp(file.repository_location, file.file_path)
+          puts "Restoring #{file.file_path}"
           next
         end
 
@@ -126,6 +136,7 @@ module Cir
         if force or not requested_files.nil?
           FileUtils.remove_entry(file.file_path)
           FileUtils.cp(file.repository_location, file.file_path)
+          puts "Restoring #{file.file_path}"
         else
           puts "Skipped mass change to #{key}."
         end

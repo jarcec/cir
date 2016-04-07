@@ -40,7 +40,7 @@ class TestCli < CirTestCase
 
     # Register two files
     @cli.run(["register", test_file, test_file])
-    assert_equal @repository.db, [test_file, test_file]
+    assert_equal @repository.db, [[test_file, test_file]]
 
     # Registering no files
     assert_raise(SystemExit) { @cli.run(["register"]) }
@@ -51,7 +51,7 @@ class TestCli < CirTestCase
 
     # Register two files
     @cli.run(["deregister", test_file, test_file])
-    assert_equal @repository.db, [test_file, test_file]
+    assert_equal @repository.db, [[test_file, test_file]]
 
     # Registering no files
     assert_raise(SystemExit) { @cli.run(["deregister"]) }

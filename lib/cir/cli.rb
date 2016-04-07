@@ -68,19 +68,13 @@ module Cir
     ##
     # Register new file(s)
     def sub_register(argv)
-      argv.each do |file|
-        puts "Registering file: #{file}"
-        @repository.register(File.expand_path(file))
-      end
+      @repository.register(argv)
     end
 
     ##
     # Deregister existing file(s)
     def sub_deregister(argv)
-      argv.each do |file|
-        puts "Deregistering file: #{file}"
-        @repository.deregister(File.expand_path(file))
-      end
+      @repository.deregister(argv)
     end
 
     ##

@@ -29,7 +29,7 @@ class RepositoryTest < CirTestCase
     test_file = create_file("A", "Input data")
 
     # Register in repository
-    @repo.register(test_file)
+    @repo.register [test_file]
 
     # Which should create entity in the repository
     yaml = YAML::Store.new(@repoDir + '/cir.file_list.yml')
@@ -42,7 +42,7 @@ class RepositoryTest < CirTestCase
 
     # Registering again should fail
     assert_raise Cir::Exception::AlreadyRegistered do
-      @repo.register(test_file)
+      @repo.register [test_file]
     end
   end
 
@@ -51,7 +51,7 @@ class RepositoryTest < CirTestCase
 
     test_file = create_file("A", "Input data")
 
-    @repo.register(test_file)
+    @repo.register [test_file]
 
     assert @repo.registered?(test_file)
     assert_false @repo.registered?("/blah")
@@ -64,17 +64,17 @@ class RepositoryTest < CirTestCase
     test_file = create_file("A", "Input data")
 
     # Register in repository
-    @repo.register(test_file)
+    @repo.register [test_file]
     assert @repo.registered? test_file
 
     # Deregister the file now
-    @repo.deregister(test_file)
+    @repo.deregister [test_file]
 
     assert_false @repo.registered? test_file
     assert_false File.exists?("#{@repoDir}/#{test_file}")
 
     # Deregister of not registered file should raise an exception
-    assert_raise(Cir::Exception::NotRegistered) { @repo.deregister "X"}
+    assert_raise(Cir::Exception::NotRegistered) { @repo.deregister ["X"]}
   end
 
   def test_status
@@ -82,8 +82,7 @@ class RepositoryTest < CirTestCase
 
     test_file_a = create_file("A", "data")
     test_file_b = create_file("B", "data")
-    @repo.register(test_file_a)
-    @repo.register(test_file_b)
+    @repo.register [test_file_a, test_file_b]
 
     # Everything
     status = @repo.status
@@ -103,7 +102,7 @@ class RepositoryTest < CirTestCase
     init_repo
 
     test_file = create_file("A", "data")
-    @repo.register(test_file)
+    @repo.register [test_file]
 
     # Update non existing file
     assert_raise(Cir::Exception::NotRegistered) { @repo.update ["X"] }
@@ -123,7 +122,7 @@ class RepositoryTest < CirTestCase
     init_repo
 
     test_file = create_file("A", "data")
-    @repo.register(test_file)
+    @repo.register [test_file]
 
     # Restore non existing file
     assert_raise(Cir::Exception::NotRegistered) { @repo.restore ["X"] }
