@@ -9,11 +9,11 @@ class DiffManagerTest < CirTestCase
     file_c = create_file("c.file", "B")
 
     # Same content
-    diff = Cir::DiffManager.create(Cir::StoredFile.new(file_path: file_a, repository_location: file_b))
+    diff = Cir::DiffManager.create(file_a, file_b)
     assert_false diff.changed?
 
     # Different content
-    diff = Cir::DiffManager.create(Cir::StoredFile.new(file_path: file_a, repository_location: file_c))
+    diff = Cir::DiffManager.create(file_a, file_c)
     assert diff.changed?
   end
 

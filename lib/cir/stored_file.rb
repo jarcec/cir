@@ -19,5 +19,11 @@ module Cir
         instance_variable_set "@#{attr}", value
       end
     end
+
+    ##
+    # Generate diff using DiffManager
+    def diff
+      Cir::DiffManager.create(repository_location, file_path)
+    end
   end
 end

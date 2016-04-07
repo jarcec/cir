@@ -5,9 +5,9 @@ module Cir
   # Abstraction above chosen diff library so that we can switch it at runtime if/when needed
   class DiffManager
 
-    def self.create(storedFile)
+    def self.create(source, destination)
       # Compare stored version in our internal repo and then the current version
-      diff = Diffy::Diff.new(storedFile.repository_location, storedFile.file_path, source: "files", diff: "-U 3")
+      diff = Diffy::Diff.new(source, destination, source: "files", diff: "-U 3")
 
       # And finally return diff object with standardized interface
       DiffManager.new(diff)

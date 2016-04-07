@@ -89,7 +89,7 @@ module Cir
       files = @repository.status(argv.empty? ? nil : argv)
       
       files.each do |file|
-        diff = Cir::DiffManager.create(file)
+        diff = file.diff
         if diff.changed?
           puts "File #{file.file_path} changed."
           puts diff.to_s if @cmd_opts[:show_diff]

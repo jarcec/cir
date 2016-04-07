@@ -105,7 +105,7 @@ module Cir
           @database[:files].each do |key, value|
             stored = stored_file(key)
 
-            diff = Cir::DiffManager.create(stored)
+            diff = stored.diff
             if diff.changed?
               import_file key
             end
@@ -115,7 +115,7 @@ module Cir
           files.each do |file|
             stored = stored_file(file)
 
-            diff = Cir::DiffManager.create(stored)
+            diff = stored.diff
             if diff.changed?
               import_file key
             end
@@ -140,7 +140,7 @@ module Cir
             if not File.exists?(stored.file_path)
               FileUtils.cp(stored.repository_location, stored.file_path)
             else
-              if Cir::DiffManager.create(stored).changed?
+              if stored.diff.changed?
                 if force
                   FileUtils.remove_entry stored.file_path
                   FileUtils.cp(stored.repository_location, stored.file_path)
@@ -154,7 +154,7 @@ module Cir
           # User supplied set of files
           files.each do |file|
             stored = stored_file(file)
-            diff = Cir::DiffManager.create(stored)
+            diff = stored.diff
 
             if not File.exists? stored.file_path
               FileUtils.cp(stored.repository_location, stored.file_path)
