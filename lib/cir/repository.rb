@@ -98,28 +98,10 @@ module Cir
 
     ##
     # Will update stored variant of existing files with their newer copy
-    def update(files = nil)
-      @database.transaction do
-        if files.nil?
-          # No file list, go over all files and detect if they changed
-          @database[:files].each do |key, value|
-            stored = stored_file(key)
-
-            diff = stored.diff
-            if diff.changed?
-              import_file key
-            end
-          end
-        else
-          # When we have a file list we will verify only the particular files
-          files.each do |file|
-            stored = stored_file(file)
-
-            diff = stored.diff
-            if diff.changed?
-              import_file key
-            end
-          end
+    def update(requested_files = nil)
+      generate_file_list(requested_files).each do |file|
+        if file.diff.changed?
+          import_file(file.file_path)
         end
       end
 
@@ -129,47 +111,46 @@ module Cir
 
     ##
     # Restore persistent variant of the files
-    def restore(files = nil, force = false)
-      @database.transaction do
-        if files.nil?
-          # No file list, go over all files and detect if they changed
-          @database[:files].each do |key, value|
-            stored = stored_file(key)
+    def restore(requested_files = nil, force = false)
+      generate_file_list(requested_files).each do |file|
+        # If the destination file doesn't exist, we will simply copy it over
+        if not File.exists?(file.file_path)
+          FileUtils.cp(file.repository_location, file.file_path)
+          next
+        end
 
-            # If the file on local file system doesn't exists, task is simple - just copy it to working directory
-            if not File.exists?(stored.file_path)
-              FileUtils.cp(stored.repository_location, stored.file_path)
-            else
-              if stored.diff.changed?
-                if force
-                  FileUtils.remove_entry stored.file_path
-                  FileUtils.cp(stored.repository_location, stored.file_path)
-                else
-                  puts "Skipped mass change to #{key}."
-                end
-              end
-            end
-          end
+        # Skipping files that did not changed
+        next unless file.diff.changed?
+
+        # If we're run with force or in case of specific files, remove existing file and replace it
+        if force or not requested_files.nil?
+          FileUtils.remove_entry(file.file_path)
+          FileUtils.cp(file.repository_location, file.file_path)
         else
-          # User supplied set of files
-          files.each do |file|
-            stored = stored_file(file)
-            diff = stored.diff
-
-            if not File.exists? stored.file_path
-              FileUtils.cp(stored.repository_location, stored.file_path)
-            else
-              if diff.changed?
-                FileUtils.remove_entry stored.file_path
-                FileUtils.cp(stored.repository_location, stored.file_path)
-              end
-            end
-          end
+          puts "Skipped mass change to #{key}."
         end
       end
     end
 
     private
+
+    ##
+    # Prepare file list for commands that accepts multiple files or none at all
+    def generate_file_list(requested_files)
+      files = []
+
+      @database.transaction do
+        if requested_files.nil?
+          # No file list, go over all files and detect if they changed
+          @database[:files].each { |file, value| files << stored_file(file) }
+        else
+          # User supplied set of files
+          requested_files.each { |file| files << stored_file(file) }
+        end
+      end
+
+      files
+    end
 
     # Create stored file entity for given file (full path)
     def stored_file(file)
