@@ -10,11 +10,9 @@ module Cir
     SUB_COMMANDS = %w(init register status update deregister)
 
     ##
-    # Initialization will create repository instance and hence validate that it exists
+    # Initiation of the object will get CIR_HOME
     def initialize
-      # Repository with all our metadata
-      cirHome = File.expand_path(ENV['CIR_HOME'] || "~/.cir/repository")
-      @repository = Cir::Repository.new(cirHome)
+      @cirHome = File.expand_path(ENV['CIR_HOME'] || "~/.cir/repository")
     end
 
     ##
@@ -35,9 +33,18 @@ module Cir
       
       # Subcommand specific argument parsing
       @cmd = argv.shift
+
+      # Subcommand init is kind of special as it works without existing repository
+      if @cmd == "init"
+        sub_init
+        return
+      end
+
+      # For all our other commands we need to have repository available
+      @repository ||= Cir::Repository.new(@cirHome)
+
+      # Based on the subcommand parse additional arguments/execute given action
       @cmd_opts = case @cmd
-        when "init"
-          sub_init
         when "register"
           Trollop::die "Missing file list" if argv.empty?
           sub_register(argv)
@@ -62,8 +69,7 @@ module Cir
     ##
     # Init repository in new location
     def sub_init
-      Cir::Repository.create(cirHome)
-      return
+      Cir::Repository.create(@cirHome)
     end
 
     ##
