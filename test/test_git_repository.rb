@@ -29,6 +29,9 @@ class GitRepositoryTest < CirTestCase
     assert_equal "master", master.name
     assert_not_nil master.target
 
+    assert_match "a.file", master.target.message
+    assert_match "b.file", master.target.message
+
     tree = master.target.tree
     assert_not_nil tree
     assert_equal 2, tree.count

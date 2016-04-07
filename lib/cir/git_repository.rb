@@ -50,14 +50,31 @@ module Cir
     ##
     # Commit all staged changes to the git repository
     def commit
+      # Write current index back to the repository
       index = @repo.index
       commit_tree = index.write_tree @repo
 
-      commit_author = { email: 'cir-auto-commit@nowhere.cz', name: 'cir', time: Time.now }
+      # Commit message
+      files = []
+      index.each {|i| files << File.basename(i[:path]) }
+      message = "Affected files: #{files.join(', ')}"
+
+      # User handling
+      user = ENV['USER']
+      user = "cir-out-commit" if user.nil?
+
+      # Commit author structure for git
+      commit_author = {
+        email: 'cir-auto-commit@nowhere.cz',
+        name: user,
+        time: Time.now
+      }
+
+      # And finally commit itself
       Rugged::Commit.create @repo,
         author: commit_author,
         committer: commit_author,
-        message: 'Committed by CIR automatically.',
+        message: message,
         parents: @repo.empty? ? [] : [ @repo.head.target ].compact,
         tree: commit_tree,
         update_ref: 'HEAD'
