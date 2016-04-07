@@ -37,7 +37,7 @@ module Cir
     ##
     # Register new file. Given path must be absolute.
     def register(files)
-      files.each do |file|
+      expand(files) do |file|
         # Register is one time operation, one can't re-register existing file
         raise Cir::Exception::AlreadyRegistered, file if registered?(file)
 
@@ -58,7 +58,7 @@ module Cir
     # Deregister file
     def deregister(files)
       @database.transaction do
-        files.each do |file|
+        expand(files) do |file|
           stored = stored_file(file)
 
           # Remove the file from git, our database and finally from git working directory
@@ -84,23 +84,7 @@ module Cir
     ##
     # Return status for all registered files
     def status(requested_files = nil)
-      files = []
-
-      @database.transaction do 
-        # Without requested_files list, we'll return everything
-        if requested_files.nil?
-          @database[:files].each do |key, value|
-            files << stored_file(key)
-          end
-        else
-          # Otherwise we'll look only for specific files
-          requested_files.each do |request|
-            files << stored_file(request)
-          end
-        end
-      end
-
-      files
+      generate_file_list(requested_files)
     end
 
 
@@ -156,7 +140,7 @@ module Cir
           @database[:files].each { |file, value| files << stored_file(file) }
         else
           # User supplied set of files
-          requested_files.each { |file| files << stored_file(file) }
+          expand(requested_files) { |file| files << stored_file(file) }
         end
       end
 
@@ -192,5 +176,13 @@ module Cir
       @git.add_file(file[1..-1]) # Removing leading "/" to make the absolute path relative to the repository's root
     end
 
+    ##
+    # Loop over user specified file paths that will always expand the specified path
+    def expand(files)
+      files.each do |file|
+        expanded = File.expand_path(file)
+        yield file
+      end
+    end
   end # end class Repository
 end # end module Cir
