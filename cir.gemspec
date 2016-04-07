@@ -15,6 +15,7 @@ Gem::Specification.new do |s|
 
   # Dependencies
   s.add_development_dependency 'test-unit', '~> 3.1'
+  s.add_development_dependency 'yard', '~> 0.8'
   s.add_runtime_dependency 'trollop', '~> 2.1'
   s.add_runtime_dependency 'rugged', '~> 0.24'
   s.add_runtime_dependency 'diffy', '~> 3.1'
