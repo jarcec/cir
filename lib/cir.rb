@@ -1,3 +1,4 @@
+require 'cir/version'
 require 'cir/exception/exceptions'
 require 'cir/diff_manager'
 require 'cir/stored_file'

@@ -1,6 +1,8 @@
+require_relative 'lib/cir/version'
+
 Gem::Specification.new do |s|
   s.name        = 'cir'
-  s.version     = '0.0.1'
+  s.version     = Cir::VERSION
   s.date        = '2016-03-31'
   s.summary     = "Configs in Repository"
   s.description = "Simple tool to manage various configuration files in repository"

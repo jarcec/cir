@@ -28,7 +28,7 @@ module Cir
     def run(argv)
       # Global argument parsing
       @global_opts = Trollop::options(argv) do
-        version "CIR - Configs in repository"
+        version "CIR - Configs in repository #{Cir::VERSION}"
         banner "Keep your configuration files safely versioned in external repository. Available subcommands #{SUB_COMMANDS}"
         stop_on SUB_COMMANDS
       end
