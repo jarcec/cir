@@ -44,7 +44,7 @@ module Cir
       @repository ||= Cir::Repository.new(@cirHome)
 
       # Based on the subcommand parse additional arguments/execute given action
-      @cmd_opts = case @cmd
+      case @cmd
         when "register"
           Trollop::die "Missing file list" if argv.empty?
           sub_register(argv)
@@ -52,7 +52,7 @@ module Cir
           Trollop::die "Missing file list" if argv.empty?
           sub_deregister(argv)
         when "status"
-          Trollop::options(argv) do
+          @cmd_opts = Trollop::options(argv) do
             opt :show_diff, "Show diffs for changed files", :default => false
             opt :all, "Display all files even those that haven't been changed", :default => false
           end
