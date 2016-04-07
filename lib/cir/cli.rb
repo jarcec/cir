@@ -47,6 +47,7 @@ module Cir
         when "status"
           Trollop::options(argv) do
             opt :show_diff, "Show diffs for changed files", :default => false
+            opt :all, "Display all files even those that haven't been changed", :default => false
           end
           sub_status(argv)
         when "update"
@@ -87,6 +88,8 @@ module Cir
         if diff.changed?
           puts "File #{file.file_path} changed."
           puts diff.to_s if @cmd_opts[:show_diff]
+        elsif @cmd_opts[:all]
+          puts "File #{file.file_path} is the same."
         end
       end
     end
