@@ -40,13 +40,10 @@ module Cir
       # Register is one time operation, one can't re-register existing file
       raise Cir::Exception::AlreadyRegistered, file if registered?(file)
 
-      # Copy new file to the repository
-      target_dir = File.expand_path(@git.repository_root + "/" + File.dirname(file))
-      FileUtils.mkdir_p(target_dir)
-      FileUtils.cp(file, target_dir)
+      # Import file to repository
+      import_file file
 
-      # And register it inside git and our metadata database
-      @git.add_file(file[1..-1]) # Removing leading "/" to make the absolute path relative to the repository's root
+      # Create new metadata for the tracked file
       @database.transaction { @database[:files][file] = {} }
 
       # And finally commit the transaction
@@ -56,16 +53,12 @@ module Cir
     ##
     # Deregister file
     def deregister(file)
-      # Can't deregister file that hasn't been registered
-      raise Cir::Exception::NotRegistered, file if not registered?(file)
-
-      # Remove the file from git, our database and finally from git working directory
       @database.transaction do
-        stored = createStoredFile(file, @database[:files][file])
+        stored = stored_file(file)
+
+        # Remove the file from git, our database and finally from git working directory
         FileUtils.rm(stored.repository_location)
-
         @git.remove_file(file[1..-1]) # Removing leading "/" to make the absolute path relative to the repository's root
-
         @database[:files].delete(file)
       end
 
@@ -89,14 +82,12 @@ module Cir
         # Without requested_files list, we'll return everything
         if requested_files.nil?
           @database[:files].each do |key, value|
-            files << createStoredFile(key, value)
+            files << stored_file(key)
           end
         else
           # Otherwise we'll look only for specific files
           requested_files.each do |request|
-            raise Cir::Exception::NotRegistered, request unless @database[:files].include? request
-
-            files << createStoredFile(request, @database[:files][request])
+            files << stored_file(request)
           end
         end
       end
@@ -112,19 +103,21 @@ module Cir
         if files.nil?
           # No file list, go over all files and detect if they changed
           @database[:files].each do |key, value|
-            diff = Cir::DiffManager.create(createStoredFile(key, value))
+            stored = stored_file(key)
+
+            diff = Cir::DiffManager.create(stored)
             if diff.changed?
-              importFileToRepository(key)
+              import_file key
             end
           end
         else
           # When we have a file list we will verify only the particular files
           files.each do |file|
-            raise Cir::Exception::NotRegistered, file unless @database[:files].include? file
+            stored = stored_file(file)
 
-            diff = Cir::DiffManager.create(createStoredFile(file, @database[:files][file]))
+            diff = Cir::DiffManager.create(stored)
             if diff.changed?
-              importFileToRepository(key)
+              import_file key
             end
           end
         end
@@ -141,7 +134,7 @@ module Cir
         if files.nil?
           # No file list, go over all files and detect if they changed
           @database[:files].each do |key, value|
-            stored = createStoredFile(key, @database[:files][key])
+            stored = stored_file(key)
 
             # If the file on local file system doesn't exists, task is simple - just copy it to working directory
             if not File.exists?(stored.file_path)
@@ -160,9 +153,7 @@ module Cir
         else
           # User supplied set of files
           files.each do |file|
-            raise Cir::Exception::NotRegistered, file unless @database[:files].include? file
-
-            stored = createStoredFile(file, @database[:files][file])
+            stored = stored_file(file)
             diff = Cir::DiffManager.create(stored)
 
             if not File.exists? stored.file_path
@@ -180,17 +171,19 @@ module Cir
 
     private
 
-    ##
-    # Create StoredFile structure for given file and it's metadata
-    def createStoredFile(key, value)
-      Cir::StoredFile.new(
-        file_path: key,
-        repository_location: File.expand_path(@git.repository_root + "/" + key)
+    # Create stored file entity for given file (full path)
+    def stored_file(file)
+      raise Cir::Exception::NotRegistered, file unless @database[:files].include? file
+
+      return Cir::StoredFile.new(
+        file_path: file,
+        repository_location: File.expand_path(@git.repository_root + "/" + file)
       )
     end
 
-    # TODO
-    def importFileToRepository(file)
+    ##
+    # Import given file to git repository and add it to index
+    def import_file(file)
       target_file = File.expand_path(@git.repository_root + "/" + file)
       target_dir = File.dirname(target_file)
 
