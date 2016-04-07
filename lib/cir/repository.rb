@@ -181,7 +181,7 @@ module Cir
     def expand(files)
       files.each do |file|
         expanded = File.expand_path(file)
-        yield file
+        yield expanded
       end
     end
   end # end class Repository

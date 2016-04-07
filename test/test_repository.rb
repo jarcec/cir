@@ -28,8 +28,8 @@ class RepositoryTest < CirTestCase
     # Prepare test file
     test_file = create_file("A", "Input data")
 
-    # Register in repository
-    @repo.register [test_file]
+    # Register in repository - we'll use not a final path to make sure that repository will correctly resolve it
+    @repo.register ["#{File.dirname(test_file)}/./#{File.basename(test_file)}"]
 
     # Which should create entity in the repository
     yaml = YAML::Store.new(@repoDir + '/cir.file_list.yml')
