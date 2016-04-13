@@ -1,5 +1,7 @@
-CIR - Confings in Repository
-============================
+CIR - Configuration files in Repository
+=======================================
+
+[![Build Status](https://travis-ci.org/jarcec/cir.svg?branch=master)](https://travis-ci.org/jarcec/cir)
 
 CIR solves problem that I had for a long time - version personal configuration files in git repository in a simple way - e.g. without a need to have git repository in the root of a home directory and without the need to copy the configs around every time they changes.
 
