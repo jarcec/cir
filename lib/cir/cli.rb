@@ -74,7 +74,8 @@ module Cir
         when "restore"
           sub_restore(argv)
         else
-          Trollop::die "Unknown subcommand #{cmd.inspect}"
+          Trollop::educate
+          Trollop::die "Unknown subcommand #{@cmd.inspect}"
       end
     end
 

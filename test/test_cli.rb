@@ -89,4 +89,7 @@ class TestCli < CirTestCase
     assert_equal @repository.db, [nil]
   end
 
+  def test_run_no_args
+    @cli.run []
+  end
 end
