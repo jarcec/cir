@@ -12,7 +12,7 @@ Install
 
 You can build and install the repository locally by running:
 
-  gem build cir.gemspec && gem install cir-*.gem
+    gem build cir.gemspec && gem install cir-*.gem
 
 You can pick up any release branch to install particular release.
 
@@ -23,27 +23,27 @@ Once you'll install cir per previous instructions you can invoke it with ``cir``
 
 Before first use, you need to initialize internal structures - the internal git repository and cir's metadata structures:
 
-  cir init
+    cir init
 
 Then you need to register files that you want to track. The files can be anywhere on the file system - cir doesn't impose any limitations to the location of files that it stores:
 
-  cir register ~/.vimrc ~/.zshrc
+    cir register ~/.vimrc ~/.zshrc
 
 If you need to see what of your registered files has changed just run status command. I personally have this command in my ``~/.zshrc`` file so that I'm notified on every shell start that certain files has changed and I should take an action):
 
-  cir status [--all]
+    cir status [--all]
 
 To express that new change in configuration file should be considered as a new state (~to commit the change) run:
 
-  cir update ~/.vimrc
+    cir update ~/.vimrc
 
 To get rid of local changes as the experiment did not worked out:
 
-  cir restore ~/.vimrc
+    cir restore ~/.vimrc
 
 And finally, if you're not interested to track the configuration file any more just deregister it:
 
-  cir deregister ~/.vimrc
+    cir deregister ~/.vimrc
 
 Notes
 -----
