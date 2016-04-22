@@ -16,17 +16,18 @@ require 'cir_test_case'
 class TestCli < CirTestCase
 
   class TestRepository
-    def register(file)
+    def register(file, options = {})
       @db ||= []
       @db << file
+      @options = options
     end
 
-    def deregister(file)
-      register(file)
+    def deregister(file, options = {})
+      register(file, options)
     end
 
-    def update(file)
-      register(file)
+    def update(file, options = {})
+      register(file, options)
     end
 
     def restore(file)
@@ -37,6 +38,10 @@ class TestCli < CirTestCase
       db = @db
       @db = []
       db
+    end
+
+    def options
+      @options
     end
   end
 
@@ -91,5 +96,21 @@ class TestCli < CirTestCase
 
   def test_run_no_args
     @cli.run []
+  end
+
+  ##
+  # Test that we're properly propagating message everywhere where it's needed
+  def test_message
+    # Register
+    @cli.run ["register", "--message", "A", "file1" ]
+    assert_equal @repository.options, { message: "A" }
+
+    # Deregister
+    @cli.run ["deregister", "--message", "A", "file2" ]
+    assert_equal @repository.options, { message: "A" }
+
+    # Update
+    @cli.run ["update", "--message", "A", "file2" ]
+    assert_equal @repository.options, { message: "A" }
   end
 end

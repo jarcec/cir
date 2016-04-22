@@ -61,7 +61,7 @@ module Cir
 
     ##
     # Commit all staged changes to the git repository
-    def commit
+    def commit(message = nil)
       # Write current index back to the repository
       index = @repo.index
       commit_tree = index.write_tree @repo
@@ -69,7 +69,7 @@ module Cir
       # Commit message
       files = []
       index.each {|i| files << File.basename(i[:path]) }
-      message = "Affected files: #{files.join(', ')}"
+      message = "Affected files: #{files.join(', ')}" if message.nil?
 
       # User handling
       user = ENV['USER']

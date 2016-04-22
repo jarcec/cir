@@ -66,5 +66,23 @@ class GitRepositoryTest < CirTestCase
     assert_equal 0, ruggedRepo.branches.first.target.tree.count
   end
 
+  def test_commit_message
+    init_git_repo
+
+    ruggedRepo = Rugged::Repository.new(@repoDir)
+
+    # Default commit message starts with "Affected files"
+    file_a = create_file("repo/a.file", "Content")
+    @repo.add_file "a.file"
+    @repo.commit
+    assert_match "Affected files", ruggedRepo.branches.first.target.message
+
+    # Which can be overridden to arbitrary text
+    @repo.remove_file "a.file"
+    @repo.commit("My message")
+    assert_match "My message", ruggedRepo.branches.first.target.message
+  end
+
+
 end
 

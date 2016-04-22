@@ -48,7 +48,10 @@ module Cir
 
     ##
     # Register new file. Given path must be absolute.
-    def register(files)
+    #
+    # Options
+    #   :message -> optional git message that should be used
+    def register(files, options = {})
       expand(files) do |file|
         # Register is one time operation, one can't re-register existing file
         raise Cir::Exception::AlreadyRegistered, file if registered?(file)
@@ -63,12 +66,15 @@ module Cir
       end
 
       # And finally commit the transaction
-      @git.commit
+      @git.commit(options[:message])
     end
 
     ##
     # Deregister file
-    def deregister(files)
+    #
+    # Options
+    #   :message -> optional git message that should be used
+    def deregister(files, options = {})
       @database.transaction do
         expand(files) do |file|
           stored = stored_file(file)
@@ -83,7 +89,7 @@ module Cir
       end
 
       # And finally commit the transaction
-      @git.commit
+      @git.commit(options[:message])
     end
 
 
@@ -102,7 +108,10 @@ module Cir
 
     ##
     # Will update stored variant of existing files with their newer copy
-    def update(requested_files = nil)
+    #
+    # Options
+    #   :message -> optional git message that should be used
+    def update(requested_files = nil, options = {})
       generate_file_list(requested_files).each do |file|
         if file.diff.changed?
           import_file(file.file_path)
@@ -111,7 +120,7 @@ module Cir
       end
 
       # Finally commit the transaction
-      @git.commit
+      @git.commit(options[:message])
     end
 
     ##

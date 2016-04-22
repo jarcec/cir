@@ -58,9 +58,15 @@ module Cir
       # Based on the subcommand parse additional arguments/execute given action
       case @cmd
         when "register"
+          @cmd_options = Trollop::options(argv) do
+            opt :message, "Optional commit message that should be used when updating the changes in tracking git repository.", type: :string
+          end
           Trollop::die "Missing file list" if argv.empty?
           sub_register(argv)
         when "deregister"
+          @cmd_options = Trollop::options(argv) do
+            opt :message, "Optional commit message that should be used when updating the changes in tracking git repository.", type: :string
+          end
           Trollop::die "Missing file list" if argv.empty?
           sub_deregister(argv)
         when "status"
@@ -70,6 +76,9 @@ module Cir
           end
           sub_status(argv)
         when "update"
+          @cmd_options = Trollop::options(argv) do
+            opt :message, "Optional commit message that should be used when updating the changes in tracking git repository.", type: :string
+          end
           sub_update(argv)
         when "restore"
           sub_restore(argv)
@@ -88,13 +97,13 @@ module Cir
     ##
     # Register new file(s)
     def sub_register(argv)
-      @repository.register(argv)
+      @repository.register(argv, {message: @cmd_options.message})
     end
 
     ##
     # Deregister existing file(s)
     def sub_deregister(argv)
-      @repository.deregister(argv)
+      @repository.deregister(argv, {message: @cmd_options.message})
     end
 
     ##
@@ -116,7 +125,7 @@ module Cir
     ##
     # Update given file(s) - e.g. commit any user changes
     def sub_update(argv)
-      @repository.update(argv.empty? ? nil : argv)
+      @repository.update(argv.empty? ? nil : argv, {message: @cmd_options.message})
     end
 
     ##
