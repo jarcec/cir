@@ -29,8 +29,8 @@ class GitRepositoryTest < CirTestCase
   def test_add_file_and_commit
     init_git_repo
 
-    file_a = create_file("repo/a.file", "Content")
-    file_b = create_file("repo/b.file", "Content")
+    create_file("repo/a.file", "Content")
+    create_file("repo/b.file", "Content")
 
     @repo.add_file "a.file"
     @repo.add_file "b.file"
@@ -56,7 +56,7 @@ class GitRepositoryTest < CirTestCase
 
     ruggedRepo = Rugged::Repository.new(@repoDir)
 
-    file_a = create_file("repo/a.file", "Content")
+    create_file("repo/a.file", "Content")
     @repo.add_file "a.file"
     @repo.commit
     assert_equal 1, ruggedRepo.branches.first.target.tree.count
@@ -72,7 +72,7 @@ class GitRepositoryTest < CirTestCase
     ruggedRepo = Rugged::Repository.new(@repoDir)
 
     # Default commit message starts with "Affected files"
-    file_a = create_file("repo/a.file", "Content")
+    create_file("repo/a.file", "Content")
     @repo.add_file "a.file"
     @repo.commit
     assert_match "Affected files", ruggedRepo.branches.first.target.message
