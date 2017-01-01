@@ -19,7 +19,7 @@ module Cir
   class Cli 
 
     # All subcommands that we're accepting
-    SUB_COMMANDS = %w(init register status update deregister)
+    SUB_COMMANDS = %w(init register status update restore deregister)
 
     ##
     # Initiation of the object will get CIR_HOME
