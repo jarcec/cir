@@ -115,7 +115,7 @@ module Cir
         diff = file.diff
         if diff.changed?
           puts "File #{file.file_path} changed."
-          puts diff.to_s if @cmd_opts[:show_diff]
+          puts "#{diff.to_s}\n" if @cmd_opts[:show_diff]
         elsif @cmd_opts[:all]
           puts "File #{file.file_path} is the same."
         end
