@@ -80,7 +80,7 @@ EOS
           # Help for each command
           COMMANDS.each do |name, cmd|
             puts "\nCommand :#{name}\n"
-            cmd.opts.educate
+            cmd.new.opts.educate
           end
 
           exit
