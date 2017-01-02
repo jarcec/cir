@@ -48,7 +48,7 @@ EOS
       end
 
       ##
-      # Process given arguments and execute them
+      # Process given arguments and execute them. This method also contains a lot of CLI-custom exception handling.
       def run(argv)
         begin
           # Parse global arguments
@@ -82,11 +82,11 @@ EOS
             puts "\nCommand :#{name}\n"
             cmd.new.opts.educate
           end
-
-          exit
         rescue Trollop::VersionNeeded
           puts global_opts.version
-          exit
+        rescue Exception::RepositoryExists
+          puts "Repository has been already initialized."
+          exit(-1)
          end
       end
 
