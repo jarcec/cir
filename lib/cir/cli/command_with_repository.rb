@@ -1,5 +1,3 @@
-#!/usr/bin/env ruby
-#
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
@@ -12,8 +10,24 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-require 'cir'
 
-# Run command line interface
-cir = Cir::Cli::Main.new
-cir.run(ARGV)
+module Cir
+  module Cli
+    ##
+    # Parent command class that initializes repository instance
+    class CommandWithRepository < Command
+
+      ##
+      # Repository instance
+      attr_accessor :repository
+
+      def initialize
+        # Initialize parent class first
+        super
+
+        # For all our other commands we need to have repository available
+        self.repository = Cir::Repository.new(@cirHome)
+      end
+    end
+  end
+end

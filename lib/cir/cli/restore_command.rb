@@ -1,5 +1,3 @@
-#!/usr/bin/env ruby
-#
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
@@ -12,8 +10,25 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-require 'cir'
 
-# Run command line interface
-cir = Cir::Cli::Main.new
-cir.run(ARGV)
+module Cir
+  module Cli
+    ##
+    # Restore command
+    class RestoreCommand < CommandWithRepository
+
+      def opts
+        Trollop::Parser.new do
+          banner "Discard local changes and restore last known version of the file (~ git reset)"
+        end
+      end
+
+      def process
+        Trollop::die "Missing file list" if self.files.empty?
+
+        self.repository.restore(self.files)
+      end
+
+    end
+  end
+end
