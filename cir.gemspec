@@ -10,7 +10,7 @@ Gem::Specification.new do |s|
   s.email       = 'jarcec@jarcec.net'
   s.files       = Dir['Rakefile', '{bin,lib,man,test,spec}/**/*', 'LICENSE*']
   s.executables << 'cir'
-  s.homepage    = 'https://github.com/jarcec'
+  s.homepage    = 'https://github.com/jarcec/cir'
   s.license     = 'Apache-2.0'
 
   # Dependencies
