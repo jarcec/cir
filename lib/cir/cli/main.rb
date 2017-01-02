@@ -19,12 +19,12 @@ module Cir
       ##
       # Global commands
       COMMANDS = {
-        'init'       => InitCommand.new,
-        'status'     => StatusCommand.new,
-        'register'   => RegisterCommand.new,
-        'deregister' => DeregisterCommand.new,
-        'update'     => UpdateCommand.new,
-        'restore'    => RestoreCommand.new,
+        'init'       => InitCommand,
+        'status'     => StatusCommand,
+        'register'   => RegisterCommand,
+        'deregister' => DeregisterCommand,
+        'update'     => UpdateCommand,
+        'restore'    => RestoreCommand,
       }
 
       ##
@@ -59,7 +59,7 @@ EOS
           raise Trollop::HelpNeeded, "" unless cmd_name
 
           # Given command that is current executed
-          @cmd = COMMANDS[cmd_name]
+          @cmd = COMMANDS[cmd_name].new
 
           # Finish parsing arguments
           @cmd.global_args = @global_opts
