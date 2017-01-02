@@ -34,6 +34,7 @@ module Cir
     # Open given existing repository on disk. You might need to {#create} one if needed.
     def initialize(rootPath)
       @repo = Rugged::Repository.new(rootPath)
+      @affected_files = []
     end
 
     ##
@@ -43,6 +44,8 @@ module Cir
       index = @repo.index
       index.add path: file, oid: (Rugged::Blob.from_workdir @repo, file), mode: 0100644
       index.write
+
+      @affected_files << file
     end
 
     ##
@@ -51,6 +54,8 @@ module Cir
     def remove_file(file)
       index = @repo.index
       index.remove file
+
+      @affected_files << file
     end
 
     ##
@@ -67,9 +72,7 @@ module Cir
       commit_tree = index.write_tree @repo
 
       # Commit message
-      files = []
-      index.each {|i| files << File.basename(i[:path]) }
-      message = "Affected files: #{files.join(', ')}" if message.nil?
+      message = "Affected files: #{@affected_files.uniq.join(', ')}" if message.nil?
 
       # User handling
       user = ENV['USER']
@@ -90,6 +93,9 @@ module Cir
         parents: @repo.empty? ? [] : [ @repo.head.target ].compact,
         tree: commit_tree,
         update_ref: 'HEAD'
+
+      # Reset list of files that were changed since last commit
+      @affected_files = []
     end
 
   end # class GitRepository
