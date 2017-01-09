@@ -26,6 +26,33 @@ class GitRepositoryTest < CirTestCase
     assert Dir.exists? "#{@repoDir}/.git"
   end
 
+  def test_clone
+    init_git_repo
+
+    # Create some files in the first repo
+    create_file("repo/a.file", "Content")
+    @repo.add_file "a.file"
+    @repo.commit
+
+    # Create Cloned repository
+    clonedRepoPath = "#{@workDir}/cloned"
+    Cir::GitRepository.create(clonedRepoPath, remote: @repoDir)
+    clonedRepo = Rugged::Repository.new(clonedRepoPath)
+
+    # Validate that it exists properly and that it have the cloned file
+    assert Dir.exists? "#{clonedRepoPath}/.git"
+    master = clonedRepo.branches.first
+    assert_equal "master", master.name
+    assert_not_nil master.target
+
+    assert_match(/a\.file/, master.target.message)
+
+    tree = master.target.tree
+    assert_not_nil tree
+    assert_equal 1, tree.count
+    assert_not_nil tree['a.file']
+  end
+
   def test_add_file_and_commit
     init_git_repo
 

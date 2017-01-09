@@ -18,13 +18,15 @@ module Cir
     class InitCommand < Command
 
       def opts
-      Trollop::Parser.new do
+        Trollop::Parser.new do
           banner 'Initialize all internal structures in $CIR_HOME.'
+
+          opt :clone, "Optional URL with repository that should be cloned", type: :string
         end
       end
 
       def process
-        Cir::Repository.create(@cirHome)
+        Cir::Repository.create(@cirHome, {remote: self.args[:clone]})
       end
     end
   end

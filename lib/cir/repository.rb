@@ -23,8 +23,11 @@ module Cir
 
     ##
     # Create new repository backend (initialize git repo and the metadata database)
-    def self.create(rootPath)
-      git = Cir::GitRepository.create(rootPath)
+    #
+    # Options
+    #   :remote -> Optional remote URL that should be cloned
+    def self.create(rootPath, options = {})
+      git = Cir::GitRepository.create(rootPath, options)
 
       # Create database
       database = YAML::Store.new(rootPath + '/' + FILE_LIST)

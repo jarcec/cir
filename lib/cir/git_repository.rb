@@ -19,12 +19,25 @@ module Cir
   class GitRepository
 
     ##
+    # Remote name to push and fetch data from/to
+    REMOTE_NAME = "origin"
+
+    ##
     # Create new git repository
-    def self.create(rootPath)
+    #
+    # Options
+    #   :remote -> Optional remote URL that should be cloned
+    def self.create(rootPath, options = {})
       raise Cir::Exception::RepositoryExists, "Path #{rootPath} already exists." if Dir.exists?(rootPath)
 
-      # Without remote we will create blank new repository
-      Rugged::Repository.init_at(rootPath)
+      puts options
+
+      # Depending whether we have configured remote, we might need clone or create
+      if options[:remote]
+        Rugged::Repository.clone_at(options[:remote], rootPath)
+      else
+        Rugged::Repository.init_at(rootPath)
+      end
 
       # And return our own wrapper on top of the underlying Rugged object
       Cir::GitRepository.new(rootPath)
