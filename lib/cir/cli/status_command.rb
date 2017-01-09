@@ -25,7 +25,7 @@ module Cir
         end
       end
 
-      def process
+      def process_with_repository
         files = self.repository.status(self.files.empty? ? nil : self.files)
 
         files.each do |file|

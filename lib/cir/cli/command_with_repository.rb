@@ -21,12 +21,12 @@ module Cir
       # Repository instance
       attr_accessor :repository
 
-      def initialize
-        # Initialize parent class first
-        super
-
-        # For all our other commands we need to have repository available
+      def process
+        # Pre-create repository instance
         self.repository = Cir::Repository.new(@cirHome)
+
+        # Children will declare this method to handle the command
+        process_with_repository
       end
     end
   end

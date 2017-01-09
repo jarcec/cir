@@ -24,7 +24,7 @@ module Cir
         end
       end
 
-      def process
+      def process_with_repository
         Trollop::die "Missing file list" if self.files.empty?
 
         self.repository.update(self.files, {message: self.args.message})
